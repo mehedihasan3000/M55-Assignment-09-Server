@@ -2,7 +2,7 @@ const express = require('express')
 require('dotenv').config()
 const app = express()
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 8000
 
 app.use(cors())
@@ -25,6 +25,18 @@ async function run() {
         const db = client.db("tutor-booking");
         const tutorsColl = db.collection("tutors");
 
+        app.get('/tutors', async (req, res) => {
+            const cursor = tutorsColl.find();
+            const alltutors = await cursor.toArray();
+            res.send(alltutors);
+        })
+
+        app.get('/tutors/:id', async (req, res) => {
+            const id = req.params.id
+            const tutor = await tutorsColl.findOne({ _id: new ObjectId(id) });
+            res.send(tutor);
+        })
+
         app.post('/add-tutor', async (req, res) => {
             const tutor = req.body;
             const result = await tutorsColl.insertOne(tutor);
@@ -41,7 +53,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
+    res.send('server is running!')
 })
 
 app.listen(port, () => {
